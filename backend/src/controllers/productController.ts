@@ -28,16 +28,12 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     const newProduct = await Product.create(req.body);
     res.status(201).json(newProduct);
   } catch (err) {
-    // Обработка дубликата title (E11000)
     if (err instanceof Error && err.message.includes('E11000')) {
       next(new BadRequestError('Товар с таким названием уже существует'));
-    }
-
-    // Обработка ошибок валидации Mongoose
-    if (err instanceof MongooseError.ValidationError) {
+    } else if (err instanceof MongooseError.ValidationError) {
       next(new BadRequestError('Ошибка валидации данных при создании товара'));
+    } else {
+      next(err);
     }
-
-    next(err); // Прочие ошибки → 500
   }
 };
